@@ -1,0 +1,111 @@
+swagger: '2.0'
+
+definitions:
+  createPoll:
+    properties:
+      title:
+        description: Название голосования
+        example: Лучший ВУЗ Москвы
+        type: string
+      variants:
+        description: Варианты для голосования
+        example: "МГУ\nВШЭ\nМГТУ\nМФТИ\nМГИМО"
+        type: string
+    required:
+      - title
+      - variants
+    type: object
+
+  poll:
+    properties:
+      poll_id:
+        description: ID голосования
+        example: 1
+        type: number
+      choice_id:
+        description: ID ответа (варианта)
+        example: 1
+        type: number
+    required:
+      - poll_id
+      - choice_id
+    type: object
+
+  getResult:
+    properties:
+      poll_id:
+        description: ID голосования
+        example: 1
+        type: number
+    required:
+      - poll_id
+    type: object
+
+info:
+  description: JSON API сервис
+  title:  HTTP сервис для голосования
+  version: 0.0.1
+paths:
+  /createPoll/:
+    post:
+      tags:
+        - "Создание нового голосования"
+      description:
+      parameters:
+        - description: json с новым голосованием
+          in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/createPoll'
+      responses:
+        '200':
+          description: 'Запрос корректен'
+        '400':
+          description: Некорректные входные данные
+        '500':
+          description: 'Ошибка на сервере, возможно классификатор еще не инициализирован'
+      summary:
+
+  /poll/:
+    post:
+      tags:
+        - "Голосование за конкретный вариант"
+      description:
+      parameters:
+        - description: json с голосованием за конкретный вариант
+          in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/poll'
+      responses:
+        '200':
+          description: 'Запрос корректен'
+        '400':
+          description: Некорректные входные данные
+        '500':
+          description: 'Ошибка на сервере'
+      summary: 
+  
+  /getResult/:
+    post:
+      tags:
+        - "Результат по конкретному голосованию"
+      description:
+      parameters:
+        - description: json с ID конкретного голосования
+          in: body
+          name: data
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/getResult'
+      responses:
+        '200':
+          description: Запрос завершился успешно
+        '400':
+          description: Некорректные входные данные
+        '404':
+          description: Голосования не существует
