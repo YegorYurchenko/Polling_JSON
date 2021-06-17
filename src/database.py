@@ -2,6 +2,7 @@
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from utils import add_answer_increase
 
 
 class PollsConnection:
@@ -82,3 +83,40 @@ class PollsConnection:
         connection.commit()
 
         self._close_connection(connection, cursor)
+
+    def vote(self, poll_id: int, choice_id: int) -> None:
+        """ Голосование за конкретный вариант """
+        connection, cursor = self._connect_to_database()
+
+        answers = self._get_poll_info_by_id(connection, cursor, poll_id, 'answers')
+        increased_answers = add_answer_increase(answers, choice_id)
+
+        if increased_answers:
+            self._update_answers_table(cursor, connection, poll_id, increased_answers)
+        else:
+            self._close_connection(connection, cursor)
+            raise Exception('Нет такого варианта ответа!')
+
+        self._close_connection(connection, cursor)
+
+    def _get_poll_info_by_id(self, connection: object, cursor: object,
+                            poll_id: int, info: str) -> list[any]:
+        get_query = "SELECT {0} FROM polls WHERE id = {1}".format(info, poll_id)
+        cursor.execute(get_query)
+        record = cursor.fetchone()
+
+        if record:
+            if info == 'answers':
+                return list(map(int, record[0].split()))
+
+            return list(map(str, record[0].split()))
+
+        self._close_connection(connection, cursor)
+        raise Exception('Нет такого голосования!')
+
+    @staticmethod
+    def _update_answers_table(cursor: object, connection: object,
+                            poll_id: int, answers: str) -> None:
+        update_query = "Update polls set answers = '{0}' where id = {1}".format(answers, poll_id)
+        cursor.execute(update_query)
+        connection.commit()

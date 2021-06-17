@@ -44,7 +44,20 @@ def run_server():
 
     @APP.route("/poll/", methods=['POST'])
     def poll():
-        pass
+        try:
+            data = request.get_json()
+        except Exception:
+            return 'Некорректный json-объект', 400
+
+        if data['poll_id'] < 1 or data['choice_id'] < 1:
+            return 'Нет такого голосования или варианта ответа', 500
+
+        try:
+            message = "Вы успешно проголосовали за вариант '{}'".format(data['choice_id'])
+            POLLS.vote(data['poll_id'], data['choice_id'])
+            return jsonify({'result': 'success', 'message': message})
+        except Exception:
+            return 'Не получилось проголосовать. Нет такого голосования или варианта ответа', 500
 
     @APP.route("/getResult/", methods=["POST"])
     def get_result():

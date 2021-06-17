@@ -17,3 +17,12 @@ def get_initial_answers(variants: str) -> str:
     amount_of_variants = len(variants.split('\n'))
 
     return ' '.join(['0' for i in range(amount_of_variants)])
+
+def add_answer_increase(results: list[int], choice_id: int) -> any:
+    """ Функция увеличения количества голосов """
+    if results and len(results) >= choice_id:
+        results[choice_id - 1] += 1
+        new_results = list(map(str, results))
+        return ' '.join(new_results)
+
+    return None
