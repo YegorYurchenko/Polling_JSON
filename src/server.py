@@ -1,10 +1,22 @@
 """ module server.py """
 import os
-from flask import json
-from flask import Flask, redirect
+from flask import Flask, jsonify, request, redirect
 from flask_swagger_ui import get_swaggerui_blueprint
+from database import PollsConnection
+from utils import delete_empty_variants, get_initial_answers
 
 APP = Flask(__name__)
+
+data_database = {
+    "user": "postgres",
+    "password": "12345",
+    "host": "127.0.0.1",
+    "port": "5432",
+    "database": "polls_postgres_db"
+}
+
+POLLS = PollsConnection(data_database)
+
 
 def run_server():
     """ Работа сервера """
@@ -15,8 +27,20 @@ def run_server():
 
 
     @APP.route("/createPoll/", methods=['POST'])
-    def createPoll():
-        pass
+    def create_poll():
+        try:
+            data = request.get_json()
+            data['variants'] = delete_empty_variants(data['variants'])
+            data['answers'] = get_initial_answers(data['variants'])
+        except Exception:
+            return 'Некорректный json-объект', 400
+
+        try:
+            message = "Голосование '{}' успешно создано".format(data['title'])
+            POLLS.add_new_poll(data)
+            return jsonify({'result': 'success', 'message': message})
+        except Exception:
+            return 'Непредвиденная ситуация', 500
 
     @APP.route("/poll/", methods=['POST'])
     def poll():
