@@ -40,7 +40,7 @@ def run_server():
             POLLS.add_new_poll(data)
             return jsonify({'result': 'success', 'message': message})
         except Exception:
-            return 'Непредвиденная ситуация', 500
+            return 'Непредвиденная ситуация', 400
 
     @APP.route("/poll/", methods=['POST'])
     def poll():
@@ -50,25 +50,39 @@ def run_server():
             return 'Некорректный json-объект', 400
 
         if data['poll_id'] < 1 or data['choice_id'] < 1:
-            return 'Нет такого голосования или варианта ответа', 500
+            return 'Нет такого голосования или варианта ответа', 400
 
         try:
             message = "Вы успешно проголосовали за вариант '{}'".format(data['choice_id'])
             POLLS.vote(data['poll_id'], data['choice_id'])
             return jsonify({'result': 'success', 'message': message})
         except Exception:
-            return 'Не получилось проголосовать. Нет такого голосования или варианта ответа', 500
+            return 'Не получилось проголосовать. Нет такого голосования или варианта ответа', 400
 
     @APP.route("/getResult/", methods=["POST"])
     def get_result():
-        pass
+        try:
+            data = request.get_json()
+        except Exception:
+            return 'Некорректный json-объект', 400
+
+        if data['poll_id'] < 1:
+            return 'Нет такого голосования', 400
+
+        try:
+            result = POLLS.get_result(data['poll_id'])
+            message = "Результаты голосования '{0}': {1}".format(data['poll_id'], result)
+            return jsonify({'result': 'success', 'message': message})
+        except Exception:
+            return 'Нет такого голосования', 400
 
 
     @APP.route("/apispec", methods=["GET"])
     def apispec():
         folder = os.path.dirname(os.path.abspath(__file__))
-        file = open(os.path.join(folder, "swagger_config.yaml"), 'r', encoding='utf-8')
-        return file.read()
+
+        with open(os.path.join(folder, "swagger_config.yaml"), 'r', encoding='utf-8') as file:
+            return file.read()
 
 
     swagger_url = '/apidocs'

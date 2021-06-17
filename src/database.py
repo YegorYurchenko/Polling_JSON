@@ -2,7 +2,7 @@
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from utils import add_answer_increase
+from utils import add_answer_increase, split_space_for_result
 
 
 class PollsConnection:
@@ -120,3 +120,16 @@ class PollsConnection:
         update_query = "Update polls set answers = '{0}' where id = {1}".format(answers, poll_id)
         cursor.execute(update_query)
         connection.commit()
+
+    def get_result(self, poll_id: int) -> list[tuple[str, str]]:
+        """ Получение результатов конкретного голосования """
+        connection, cursor = self._connect_to_database()
+
+        variants = self._get_poll_info_by_id(connection, cursor, poll_id, 'variants')
+        answers = self._get_poll_info_by_id(connection, cursor, poll_id, 'answers')
+
+        result_answers = split_space_for_result(answers)
+        result = list(zip(variants, result_answers))
+
+        self._close_connection(connection, cursor)
+        return result
