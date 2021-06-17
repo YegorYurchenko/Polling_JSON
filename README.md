@@ -35,7 +35,7 @@ Frontend реализован с помощью [Swagger](https://swagger.io/).
     * `main.py` - файл запуска проекта
     * `server.py` - обработка запросов
     * `swagger_config.yaml` - конфигурация Swagger
-    * `urils.py` - вспомогательные функции
+    * `utils.py` - вспомогательные функции
 * `.gitignore`
 * `README.md`
 * `requirements.txt` - необходимые зависимости
