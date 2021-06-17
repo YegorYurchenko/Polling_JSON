@@ -99,9 +99,7 @@ paths:
           name: data
           required: true
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/getResult'
+            $ref: '#/definitions/getResult'
       responses:
         '200':
           description: Запрос завершился успешно
