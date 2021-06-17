@@ -26,3 +26,14 @@ def add_answer_increase(results: list[int], choice_id: int) -> any:
         return ' '.join(new_results)
 
     return None
+
+def split_space_for_result(answers: list[int]) -> list[str]:
+    """ Преобразование количества голосов в проценты """
+    sum_answers = sum(answers)
+
+    converted_answers = answers
+    if sum_answers > 0:
+        converted_answers = list(map(lambda x: round((x / sum_answers * 100), 1), answers))
+
+    result = list(map(lambda x: str(x) + '%', converted_answers))
+    return result
